@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Server, CheckCircle2, AlertCircle, RefreshCw, X } from 'lucide-react';
-import { getServerUrl } from '../../services/api.js';
+import { getServerUrl, resolveLiveServer, CLOUD_TUNNEL_URL } from '../../services/api.js';
 
 export const ServerConnectionModal: React.FC<{
   isOpen: boolean;
@@ -13,7 +13,7 @@ export const ServerConnectionModal: React.FC<{
 
   useEffect(() => {
     if (isOpen) {
-      setUrl(getServerUrl() || 'https://controversial-concluded-spokesman-seas.trycloudflare.com');
+      setUrl(getServerUrl() || CLOUD_TUNNEL_URL);
       setTestResult(null);
       setStatusMsg('');
     }
@@ -97,13 +97,32 @@ export const ServerConnectionModal: React.FC<{
           <div className="flex flex-col gap-2">
             <button
               type="button"
-              onClick={() => {
-                setUrl('https://controversial-concluded-spokesman-seas.trycloudflare.com');
-                testConnection('https://controversial-concluded-spokesman-seas.trycloudflare.com');
+              onClick={async () => {
+                setIsTesting(true);
+                setTestResult(null);
+                setStatusMsg('Checking GitHub live registry for active server...');
+                try {
+                  const detected = await resolveLiveServer();
+                  if (detected) {
+                    setUrl(detected);
+                    setTestResult('success');
+                    setStatusMsg(`Found active live server: ${detected}`);
+                  } else {
+                    setUrl(CLOUD_TUNNEL_URL);
+                    await testConnection(CLOUD_TUNNEL_URL);
+                  }
+                } catch {
+                  setUrl(CLOUD_TUNNEL_URL);
+                  await testConnection(CLOUD_TUNNEL_URL);
+                } finally {
+                  setIsTesting(false);
+                }
               }}
-              className="w-full py-2.5 px-3 rounded-xl bg-brand-50 border border-brand-200 hover:bg-brand-100 text-brand-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+              disabled={isTesting}
+              className="w-full py-2.5 px-3 rounded-xl bg-brand-50 border border-brand-200 hover:bg-brand-100 text-brand-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
             >
-              🌐 Reset to Active Cloud Tunnel
+              <RefreshCw className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin' : ''}`} />
+              🔄 Auto-Detect Live Cloud Server
             </button>
 
             <button
@@ -112,7 +131,6 @@ export const ServerConnectionModal: React.FC<{
               disabled={isTesting || !url.trim()}
               className="w-full py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin' : ''}`} />
               Test Entered URL
             </button>
           </div>

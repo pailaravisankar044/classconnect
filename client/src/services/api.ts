@@ -5,14 +5,49 @@ export interface ApiResponse<T = any> {
   [key: string]: any;
 }
 
-export const CLOUD_TUNNEL_URL = 'https://controversial-concluded-spokesman-seas.trycloudflare.com';
+export const CLOUD_TUNNEL_URL = 'https://capable-hardcover-creation-expanded.trycloudflare.com';
+export const GITHUB_CONFIG_URL = 'https://raw.githubusercontent.com/pailaravisankar044/classconnect/main/server_config.json';
+
+// Dynamic resolver: fetches current live server address from GitHub repository
+export async function resolveLiveServer(): Promise<string | null> {
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 3500);
+    const res = await fetch(`${GITHUB_CONFIG_URL}?t=${Date.now()}`, {
+      signal: ctrl.signal,
+      cache: 'no-store'
+    });
+    clearTimeout(timer);
+
+    if (res.ok) {
+      const data = await res.json();
+      const targetUrl = data.serverUrl || data.renderUrl;
+      if (targetUrl) {
+        const clean = targetUrl.trim().replace(/\/$/, '');
+        // Verify target server is reachable
+        const healthCheck = await fetch(`${clean}/api/health`, {
+          signal: AbortSignal.timeout(3000),
+          headers: { 'Bypass-Tunnel-Reminder': '1' }
+        }).catch(() => null);
+
+        if (healthCheck && healthCheck.ok) {
+          localStorage.setItem('classconnect_server_url', clean);
+          return clean;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Auto-discovery from GitHub skipped/timed out:', e);
+  }
+  return null;
+}
 
 export function getServerUrl(): string {
   if (typeof window === 'undefined') return '';
   const custom = localStorage.getItem('classconnect_server_url');
   if (custom && custom.trim()) {
     const clean = custom.trim().replace(/\/$/, '');
-    // If previously saved to local Wi-Fi, purge it and force Cloud Tunnel
+    // If stored custom URL is an old local Wi-Fi or localhost, purge it
     if (clean.includes('192.168.') || clean.includes('10.') || clean.includes('172.') || clean.includes('localhost:5000')) {
       localStorage.removeItem('classconnect_server_url');
       return CLOUD_TUNNEL_URL;
@@ -55,10 +90,36 @@ class ApiService {
 
     try {
       const apiBase = getApiBaseUrl();
-      const response = await fetch(`${apiBase}${endpoint}`, {
-        ...options,
-        headers
-      });
+      let response: Response;
+
+      try {
+        response = await fetch(`${apiBase}${endpoint}`, {
+          ...options,
+          headers
+        });
+      } catch (firstErr: any) {
+        // Attempt dynamic live server discovery from GitHub if initial request fails
+        const isCapacitor = typeof window !== 'undefined' && (
+          window.location.origin.includes('capacitor://') ||
+          (window.location.hostname === 'localhost' && window.location.port !== '5000' && window.location.port !== '3000')
+        );
+
+        if (isCapacitor) {
+          console.log('Initial request failed. Resolving live cloud server from GitHub...');
+          const newUrl = await resolveLiveServer();
+          if (newUrl && `${newUrl}/api` !== apiBase) {
+            console.log('Retrying request with resolved cloud server:', newUrl);
+            response = await fetch(`${newUrl}/api${endpoint}`, {
+              ...options,
+              headers
+            });
+          } else {
+            throw firstErr;
+          }
+        } else {
+          throw firstErr;
+        }
+      }
 
       // Handle 401 Unauthorized
       if (response.status === 401) {
