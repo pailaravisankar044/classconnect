@@ -5,22 +5,25 @@ export interface ApiResponse<T = any> {
   [key: string]: any;
 }
 
-export const CANDIDATE_SERVERS = [
-  'https://controversial-concluded-spokesman-seas.trycloudflare.com',
-  'http://192.168.29.216:5000'
-];
+export const CLOUD_TUNNEL_URL = 'https://controversial-concluded-spokesman-seas.trycloudflare.com';
 
 export function getServerUrl(): string {
   if (typeof window === 'undefined') return '';
   const custom = localStorage.getItem('classconnect_server_url');
   if (custom && custom.trim()) {
-    return custom.trim().replace(/\/$/, '');
+    const clean = custom.trim().replace(/\/$/, '');
+    // If previously saved to local Wi-Fi, purge it and force Cloud Tunnel
+    if (clean.includes('192.168.') || clean.includes('10.') || clean.includes('172.') || clean.includes('localhost:5000')) {
+      localStorage.removeItem('classconnect_server_url');
+      return CLOUD_TUNNEL_URL;
+    }
+    return clean;
   }
   // Check if running inside native Capacitor Android app
   const isCapacitor = window.location.origin.includes('capacitor://') ||
                       (window.location.hostname === 'localhost' && window.location.port !== '5000' && window.location.port !== '3000');
   if (isCapacitor) {
-    return CANDIDATE_SERVERS[0];
+    return CLOUD_TUNNEL_URL;
   }
   return '';
 }
@@ -52,49 +55,13 @@ class ApiService {
 
     try {
       const apiBase = getApiBaseUrl();
-      let response: Response;
-
-      try {
-        response = await fetch(`${apiBase}${endpoint}`, {
-          ...options,
-          headers
-        });
-      } catch (netErr: any) {
-        // If on Capacitor or failed network, attempt auto-failover across candidate servers
-        const isCapacitor = typeof window !== 'undefined' && (
-          window.location.origin.includes('capacitor://') ||
-          (window.location.hostname === 'localhost' && window.location.port !== '5000' && window.location.port !== '3000')
-        );
-
-        let recovered = false;
-        if (isCapacitor) {
-          for (const cand of CANDIDATE_SERVERS) {
-            if (cand !== getServerUrl()) {
-              try {
-                const retryRes = await fetch(`${cand}/api${endpoint}`, {
-                  ...options,
-                  headers
-                });
-                if (retryRes.ok || retryRes.status === 401 || retryRes.status === 400) {
-                  localStorage.setItem('classconnect_server_url', cand);
-                  response = retryRes;
-                  recovered = true;
-                  break;
-                }
-              } catch {
-                // Continue to next candidate
-              }
-            }
-          }
-        }
-
-        if (!recovered) {
-          throw netErr;
-        }
-      }
+      const response = await fetch(`${apiBase}${endpoint}`, {
+        ...options,
+        headers
+      });
 
       // Handle 401 Unauthorized
-      if (response!.status === 401) {
+      if (response.status === 401) {
         if (!endpoint.includes('/auth/login')) {
           localStorage.removeItem('classconnect_token');
           localStorage.removeItem('classconnect_user');
@@ -104,10 +71,10 @@ class ApiService {
         }
       }
 
-      const data = await response!.json().catch(() => null);
+      const data = await response.json().catch(() => null);
 
-      if (!response!.ok) {
-        const fallbackMsg = response!.status >= 500 
+      if (!response.ok) {
+        const fallbackMsg = response.status >= 500 
           ? 'Something went wrong on our end. Please try again.' 
           : (data?.message || 'Action could not be completed.');
         throw new Error(fallbackMsg);
@@ -120,7 +87,7 @@ class ApiService {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('classconnect:connection_error'));
         }
-        throw new Error('Unable to connect to server. Please check your network connection or tap the Server icon (⚙️) to switch server.');
+        throw new Error('Unable to connect to Cloud Server. Please check your internet connection.');
       }
       throw error;
     }

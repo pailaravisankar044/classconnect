@@ -13,7 +13,7 @@ export const ServerConnectionModal: React.FC<{
 
   useEffect(() => {
     if (isOpen) {
-      setUrl(getServerUrl() || 'http://192.168.29.216:5000');
+      setUrl(getServerUrl() || 'https://controversial-concluded-spokesman-seas.trycloudflare.com');
       setTestResult(null);
       setStatusMsg('');
     }
@@ -34,7 +34,7 @@ export const ServerConnectionModal: React.FC<{
       const data = await res.json();
       if (res.ok && data.status === 'ok') {
         setTestResult('success');
-        setStatusMsg('Connected successfully! ClassConnect server is online.');
+        setStatusMsg('Connected successfully! Cloud server is online.');
       } else {
         throw new Error('Unexpected response');
       }
@@ -66,7 +66,7 @@ export const ServerConnectionModal: React.FC<{
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 leading-tight">Server Connection</h3>
-              <p className="text-xs text-slate-500 font-normal">Connect mobile app to ClassConnect backend</p>
+              <p className="text-xs text-slate-500 font-normal">Connect mobile app to Cloud Tunnel</p>
             </div>
           </div>
           <button
@@ -80,43 +80,31 @@ export const ServerConnectionModal: React.FC<{
         <div className="mt-4 space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Backend Server Address (URL)
+              Cloud Server Address (URL)
             </label>
             <input
               type="text"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="e.g. http://192.168.29.216:5000 or https://classconnect.onrender.com"
+              placeholder="https://...trycloudflare.com or https://classconnect.onrender.com"
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
             <p className="text-[11px] text-slate-400 mt-1">
-              Enter your local computer Wi-Fi IP or your permanent 24/7 Render cloud address.
+              Always connected via Cloud Tunnel. Works worldwide on cellular data (4G/5G).
             </p>
           </div>
 
           <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setUrl('https://controversial-concluded-spokesman-seas.trycloudflare.com');
-                  testConnection('https://controversial-concluded-spokesman-seas.trycloudflare.com');
-                }}
-                className="flex-1 py-2 px-3 rounded-xl bg-brand-50 border border-brand-200 hover:bg-brand-100 text-brand-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
-              >
-                🌐 Cloud Tunnel (Recommended)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setUrl('http://192.168.29.216:5000');
-                  testConnection('http://192.168.29.216:5000');
-                }}
-                className="py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-medium transition-all"
-              >
-                📶 Local Wi-Fi
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setUrl('https://controversial-concluded-spokesman-seas.trycloudflare.com');
+                testConnection('https://controversial-concluded-spokesman-seas.trycloudflare.com');
+              }}
+              className="w-full py-2.5 px-3 rounded-xl bg-brand-50 border border-brand-200 hover:bg-brand-100 text-brand-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+            >
+              🌐 Reset to Active Cloud Tunnel
+            </button>
 
             <button
               type="button"
