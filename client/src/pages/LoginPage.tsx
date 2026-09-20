@@ -6,6 +6,7 @@ import { GraduationCap, Lock, Mail, ArrowRight, AlertCircle, CheckCircle2, Shiel
 export const LoginPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const roleParam = searchParams.get('role');
+  const redirectParam = searchParams.get('redirect');
   const sessionExpired = searchParams.get('session_expired');
 
   const [identifier, setIdentifier] = useState('');
@@ -22,23 +23,13 @@ export const LoginPage: React.FC = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate(`/${user.role}`);
+      if (redirectParam) {
+        navigate(redirectParam);
+      } else {
+        navigate(`/${user.role}`);
+      }
     }
-  }, [user, navigate]);
-
-  // Pre-fill demo role if requested via query param
-  useEffect(() => {
-    if (roleParam === 'teacher') {
-      setIdentifier('teacher@classconnect.com');
-      setPassword('teacher123');
-    } else if (roleParam === 'admin') {
-      setIdentifier('admin@classconnect.com');
-      setPassword('admin123');
-    } else if (roleParam === 'student') {
-      setIdentifier('student@classconnect.com');
-      setPassword('student123');
-    }
-  }, [roleParam]);
+  }, [user, navigate, redirectParam]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,28 +43,19 @@ export const LoginPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       const loggedUser = await login(identifier, password);
-      // Role-based redirection
-      if (loggedUser.role === 'admin') navigate('/admin');
-      else if (loggedUser.role === 'teacher') navigate('/teacher');
-      else navigate('/student');
+      if (redirectParam) {
+        navigate(redirectParam);
+      } else if (loggedUser.role === 'admin') {
+        navigate('/admin');
+      } else if (loggedUser.role === 'teacher') {
+        navigate('/teacher');
+      } else {
+        navigate('/student');
+      }
     } catch (err: any) {
-      setError(err.message || 'Invalid login credentials. Please try again.');
+      setError(err.message || 'Invalid login credentials. Please check your email and password.');
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleDemoFill = (role: 'student' | 'teacher' | 'admin') => {
-    setError('');
-    if (role === 'student') {
-      setIdentifier('student@classconnect.com');
-      setPassword('student123');
-    } else if (role === 'teacher') {
-      setIdentifier('teacher@classconnect.com');
-      setPassword('teacher123');
-    } else if (role === 'admin') {
-      setIdentifier('admin@classconnect.com');
-      setPassword('admin123');
     }
   };
 
@@ -185,37 +167,17 @@ export const LoginPage: React.FC = () => {
             </button>
           </form>
 
-          {/* Quick Demo Switcher */}
-          <div className="mt-8 pt-6 border-t border-slate-100">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 text-center mb-3">
-              One-Tap Demo Credentials
+          {/* Create Account Link */}
+          <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+            <p className="text-xs text-slate-600">
+              Don't have an account yet?{' '}
+              <Link 
+                to={redirectParam ? `/register?redirect=${encodeURIComponent(redirectParam)}` : "/register"} 
+                className="font-bold text-brand-600 hover:underline"
+              >
+                Create Free Account
+              </Link>
             </p>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => handleDemoFill('student')}
-                className="p-2.5 rounded-xl border border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100/70 text-emerald-800 text-xs font-bold transition-all text-center flex flex-col items-center gap-1"
-              >
-                <User className="w-4 h-4 text-emerald-600" />
-                Student
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDemoFill('teacher')}
-                className="p-2.5 rounded-xl border border-blue-200 bg-blue-50/50 hover:bg-blue-100/70 text-blue-800 text-xs font-bold transition-all text-center flex flex-col items-center gap-1"
-              >
-                <GraduationCap className="w-4 h-4 text-blue-600" />
-                Teacher
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDemoFill('admin')}
-                className="p-2.5 rounded-xl border border-purple-200 bg-purple-50/50 hover:bg-purple-100/70 text-purple-800 text-xs font-bold transition-all text-center flex flex-col items-center gap-1"
-              >
-                <ShieldCheck className="w-4 h-4 text-purple-600" />
-                Admin
-              </button>
-            </div>
           </div>
         </div>
 

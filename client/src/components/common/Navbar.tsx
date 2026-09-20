@@ -70,9 +70,15 @@ export const Navbar: React.FC = () => {
             </button>
             <Link 
               to="/login" 
-              className="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm transition-all hover:shadow-brand-500/20"
+              className="text-slate-700 hover:text-slate-900 font-semibold text-sm px-3.5 py-2 rounded-xl hover:bg-slate-100 transition-colors"
             >
-              Login
+              Log In
+            </Link>
+            <Link 
+              to="/register" 
+              className="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm px-4 py-2 rounded-xl shadow-sm transition-all hover:shadow-brand-500/20"
+            >
+              Create Account
             </Link>
           </div>
         </div>

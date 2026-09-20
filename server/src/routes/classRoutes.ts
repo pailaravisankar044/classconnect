@@ -90,6 +90,75 @@ router.get('/', authenticateToken, (req: Request, res: Response) => {
   return res.json({ success: true, classes });
 });
 
+// POST /api/classes/instant - Start an instant live meeting
+router.post('/instant', authenticateToken, requireRole(['teacher', 'admin']), (req: Request, res: Response) => {
+  try {
+    const {
+      title,
+      description,
+      meetingType = 'internal',
+      meetingUrl,
+      durationMinutes = 60
+    } = req.body;
+
+    let assignedTeacherId = req.user?.teacherId;
+    if (req.user?.role === 'admin' && !assignedTeacherId) {
+      const firstTeacher = dbHelper.get('SELECT id FROM teachers ORDER BY id ASC LIMIT 1');
+      assignedTeacherId = firstTeacher?.id || 1;
+    }
+
+    if (!assignedTeacherId) {
+      return res.status(400).json({ success: false, message: 'Teacher profile required to host instant meetings.' });
+    }
+
+    const now = new Date();
+    const date = now.toISOString().split('T')[0];
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const startTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    
+    const end = new Date(now.getTime() + durationMinutes * 60000);
+    const endTime = `${pad(end.getHours())}:${pad(end.getMinutes())}`;
+
+    const dateFormatted = date.replace(/-/g, '');
+    const countToday = dbHelper.get("SELECT COUNT(*) as count FROM classes WHERE date = ?", [date])?.count || 0;
+    const classCode = `CLS${dateFormatted}${String(countToday + 1).padStart(3, '0')}`;
+
+    const classTitle = title?.trim() || `Live Class - ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+    const result = dbHelper.run(`
+      INSERT INTO classes (
+        class_code, course_id, batch_id, teacher_id, title, description,
+        date, start_time, end_time, duration_minutes, meeting_type, meeting_url, max_students, status
+      ) VALUES (?, NULL, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, 100, 'live')
+    `, [
+      classCode,
+      assignedTeacherId,
+      classTitle,
+      description || 'Instant live class session.',
+      date,
+      startTime,
+      endTime,
+      durationMinutes,
+      meetingType,
+      meetingUrl || null
+    ]);
+
+    const newClassId = Number(result.lastInsertRowid);
+
+    return res.status(201).json({
+      success: true,
+      message: 'Instant meeting started successfully!',
+      classId: newClassId,
+      classCode,
+      joinUrl: `/join/${classCode}`,
+      title: classTitle
+    });
+  } catch (err: any) {
+    console.error('Error starting instant class:', err);
+    return res.status(500).json({ success: false, message: err.message || 'Failed to start instant class.' });
+  }
+});
+
 // POST /api/classes - Create new class (Admin or Teacher)
 router.post('/', authenticateToken, requireRole(['admin', 'teacher']), (req: Request, res: Response) => {
   try {

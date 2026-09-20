@@ -14,15 +14,15 @@ import {
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
-  const { user, quickLogin } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [classCodeInput, setClassCodeInput] = React.useState('');
 
-  const handleQuickLogin = async (role: 'student' | 'teacher' | 'admin') => {
-    try {
-      await quickLogin(role);
-      navigate(`/${role}`);
-    } catch (e) {
-      navigate(`/login?role=${role}`);
+  const handleJoinSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = classCodeInput.trim();
+    if (code) {
+      navigate(`/join/${code}`);
     }
   };
 
@@ -48,27 +48,45 @@ export const LandingPage: React.FC = () => {
             Attend live classes, access learning materials, and track your attendance — all in one simple platform designed for every student.
           </p>
 
-          {/* Primary Role Buttons */}
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+          {/* Primary Action Buttons */}
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
             <Link
-              to="/login?role=student"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 text-lg font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-2xl shadow-elevated transition-all hover:scale-[1.02] active:scale-[0.98]"
+              to="/register"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 text-base sm:text-lg font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-2xl shadow-elevated transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
-              <GraduationCap className="w-6 h-6" />
-              Student Login
-              <ArrowRight className="w-5 h-5 text-brand-200" />
+              <GraduationCap className="w-5 h-5" />
+              Create Free Account
+              <ArrowRight className="w-4 h-4 text-brand-200" />
             </Link>
 
             <Link
-              to="/login?role=teacher"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 text-lg font-bold text-slate-800 bg-white hover:bg-slate-50 border-2 border-slate-200 rounded-2xl shadow-soft transition-all hover:border-slate-300 active:scale-[0.98]"
+              to="/login"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 text-base sm:text-lg font-bold text-slate-800 bg-white hover:bg-slate-50 border-2 border-slate-200 rounded-2xl shadow-soft transition-all hover:border-slate-300 active:scale-[0.98]"
             >
-              <Video className="w-6 h-6 text-brand-600" />
-              Teacher Login
+              <span>Log In</span>
             </Link>
           </div>
 
-          {/* Android Mobile APK Download CTA */}
+          {/* Direct Class Code Join Bar */}
+          <div className="mt-8 max-w-md mx-auto p-2 bg-white rounded-2xl border-2 border-slate-200 shadow-soft focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+            <form onSubmit={handleJoinSubmit} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={classCodeInput}
+                onChange={(e) => setClassCodeInput(e.target.value.toUpperCase())}
+                placeholder="Enter Class Code (e.g. CLS2026...)"
+                className="flex-1 px-3.5 py-2 text-sm font-mono uppercase text-slate-900 placeholder:text-slate-400 placeholder:normal-case focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="py-2.5 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm shrink-0"
+              >
+                Join Class →
+              </button>
+            </form>
+          </div>
+
+          {/* Android Mobile APK Download CTA & Admin link */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <a
               href="/api/download/apk"
@@ -81,42 +99,12 @@ export const LandingPage: React.FC = () => {
             </a>
 
             <Link
-              to="/login?role=admin"
+              to="/login"
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors py-2 px-3 rounded-xl hover:bg-slate-100"
             >
               <ShieldCheck className="w-4 h-4" />
-              Admin Portal Login →
+              Admin Portal →
             </Link>
-          </div>
-
-          {/* One-Click Demo Quick Switcher Banner */}
-          <div className="mt-10 p-4 sm:p-5 rounded-2xl bg-brand-50/70 border border-brand-100 text-left max-w-xl mx-auto">
-            <div className="flex items-center gap-2 text-xs font-bold text-brand-800 uppercase tracking-wider mb-2">
-              <Zap className="w-4 h-4 text-brand-600" /> Instant Demo Access (One-Click)
-            </div>
-            <p className="text-xs text-slate-600 mb-3">
-              Explore the system instantly with pre-populated demo roles and active classes:
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={() => handleQuickLogin('student')}
-                className="py-2 px-3 rounded-xl bg-white border border-brand-200 text-xs font-bold text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 transition-colors shadow-sm text-center"
-              >
-                🎓 Student
-              </button>
-              <button
-                onClick={() => handleQuickLogin('teacher')}
-                className="py-2 px-3 rounded-xl bg-white border border-brand-200 text-xs font-bold text-blue-700 hover:bg-blue-50 hover:border-blue-300 transition-colors shadow-sm text-center"
-              >
-                👨‍🏫 Teacher
-              </button>
-              <button
-                onClick={() => handleQuickLogin('admin')}
-                className="py-2 px-3 rounded-xl bg-white border border-brand-200 text-xs font-bold text-purple-700 hover:bg-purple-50 hover:border-purple-300 transition-colors shadow-sm text-center"
-              >
-                🛡️ Admin
-              </button>
-            </div>
           </div>
         </div>
 

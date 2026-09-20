@@ -8,6 +8,7 @@ import { MobileNav } from './components/common/MobileNav.js';
 // Pages
 import { LandingPage } from './pages/LandingPage.js';
 import { LoginPage } from './pages/LoginPage.js';
+import { RegisterPage } from './pages/RegisterPage.js';
 import { StudentDashboard } from './pages/StudentDashboard.js';
 import { StudentClassesPage } from './pages/StudentClassesPage.js';
 import { TeacherDashboard } from './pages/TeacherDashboard.js';
@@ -67,6 +68,7 @@ export const App: React.FC = () => {
             {/* Public Routes */}
             <Route path="/" element={<AppLayout><LandingPage /></AppLayout>} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
             <Route path="/support" element={<AppLayout><SupportPage /></AppLayout>} />
 
             {/* Student Friendly Join Gateway (/join/:classCode) */}

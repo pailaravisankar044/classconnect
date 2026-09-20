@@ -27,6 +27,15 @@ export const StudentDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [qrModalClass, setQrModalClass] = useState<any>(null);
+  const [joinCode, setJoinCode] = useState('');
+
+  const handleJoinByCode = (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = joinCode.trim();
+    if (code) {
+      navigate(`/join/${code}`);
+    }
+  };
 
   const fetchDashboard = async () => {
     try {
@@ -116,6 +125,34 @@ export const StudentDashboard: React.FC = () => {
             ID: {user.studentCode}
           </div>
         )}
+      </div>
+
+      {/* Quick Join With Class Code or Link */}
+      <div className="bg-gradient-to-r from-brand-50 to-indigo-50 border border-brand-200/70 p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+            <Video className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-900">Have a Class Code or Meeting Link?</h3>
+            <p className="text-xs text-slate-600">Enter the class code shared by your teacher to join instantly.</p>
+          </div>
+        </div>
+        <form onSubmit={handleJoinByCode} className="w-full sm:w-auto flex items-center gap-2">
+          <input
+            type="text"
+            value={joinCode}
+            onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+            placeholder="e.g. CLS2026..."
+            className="flex-1 sm:w-48 px-3.5 py-2.5 text-xs font-mono font-bold uppercase rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-brand-600 shadow-sm"
+          />
+          <button
+            type="submit"
+            className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all shrink-0"
+          >
+            Join Class →
+          </button>
+        </form>
       </div>
 
       {/* NEXT CLASS — THE MOST IMPORTANT SECTION */}

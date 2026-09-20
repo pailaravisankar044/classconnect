@@ -7,6 +7,110 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = Router();
 
+// POST /api/auth/register
+router.post('/register', async (req: Request, res: Response) => {
+  try {
+    const { name, email, password, phone, role = 'student', specialization } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, message: 'Full name is required.' });
+    }
+
+    if (!email || !email.trim()) {
+      return res.status(400).json({ success: false, message: 'Email address is required.' });
+    }
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = phone ? phone.trim() : null;
+    const assignedRole = role === 'teacher' ? 'teacher' : 'student';
+
+    // Check if user already exists
+    const existing = dbHelper.get('SELECT id FROM users WHERE email = ?', [cleanEmail]);
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'An account with this email already exists. Please log in.' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const userRes = dbHelper.run(`
+      INSERT INTO users (name, email, phone, password_hash, role, status)
+      VALUES (?, ?, ?, ?, ?, 'active')
+    `, [name.trim(), cleanEmail, cleanPhone, passwordHash, assignedRole]);
+
+    const userId = Number(userRes.lastInsertRowid);
+    let roleDetails: any = {};
+
+    if (assignedRole === 'student') {
+      const maxIdRes = dbHelper.get('SELECT MAX(id) as maxId FROM students');
+      const nextNum = (maxIdRes?.maxId || 0) + 1;
+      const studentCode = `STU${String(nextNum).padStart(5, '0')}`;
+
+      // Optionally attach to default active course/batch if available
+      const defaultCourse = dbHelper.get("SELECT id FROM courses WHERE status = 'active' ORDER BY id ASC LIMIT 1");
+      const defaultBatch = defaultCourse 
+        ? dbHelper.get("SELECT id FROM batches WHERE course_id = ? AND status = 'active' ORDER BY id ASC LIMIT 1", [defaultCourse.id])
+        : null;
+
+      const studentRes = dbHelper.run(`
+        INSERT INTO students (user_id, student_code, course_id, batch_id)
+        VALUES (?, ?, ?, ?)
+      `, [userId, studentCode, defaultCourse?.id || null, defaultBatch?.id || null]);
+
+      const studentId = Number(studentRes.lastInsertRowid);
+      roleDetails = {
+        studentId,
+        studentCode,
+        courseId: defaultCourse?.id || null,
+        batchId: defaultBatch?.id || null
+      };
+    } else if (assignedRole === 'teacher') {
+      const maxIdRes = dbHelper.get('SELECT MAX(id) as maxId FROM teachers');
+      const nextNum = (maxIdRes?.maxId || 0) + 1;
+      const teacherCode = `TRN${String(nextNum).padStart(5, '0')}`;
+
+      const teacherRes = dbHelper.run(`
+        INSERT INTO teachers (user_id, teacher_code, specialization, bio)
+        VALUES (?, ?, ?, ?)
+      `, [userId, teacherCode, specialization?.trim() || 'Online Educator', '']);
+
+      const teacherId = Number(teacherRes.lastInsertRowid);
+      roleDetails = {
+        teacherId,
+        teacherCode,
+        specialization: specialization?.trim() || 'Online Educator'
+      };
+    }
+
+    // Auto-generate JWT token
+    const token = jwt.sign(
+      { id: userId, email: cleanEmail, role: assignedRole, name: name.trim(), ...roleDetails },
+      config.jwtSecret,
+      { expiresIn: '7d' }
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: 'Account created successfully!',
+      token,
+      user: {
+        id: userId,
+        name: name.trim(),
+        email: cleanEmail,
+        phone: cleanPhone,
+        role: assignedRole,
+        ...roleDetails
+      }
+    });
+  } catch (error: any) {
+    console.error('Registration error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to create account. Please try again.' });
+  }
+});
+
 // POST /api/auth/login
 router.post('/login', async (req: Request, res: Response) => {
   try {
