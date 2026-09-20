@@ -99,8 +99,8 @@ export const ServerConnectionModal: React.FC<{
               <button
                 type="button"
                 onClick={() => {
-                  setUrl('https://young-words-drum.loca.lt');
-                  testConnection('https://young-words-drum.loca.lt');
+                  setUrl('https://consumer-std-hammer-praise.trycloudflare.com');
+                  testConnection('https://consumer-std-hammer-praise.trycloudflare.com');
                 }}
                 className="flex-1 py-2 px-3 rounded-xl bg-brand-50 border border-brand-200 hover:bg-brand-100 text-brand-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
               >

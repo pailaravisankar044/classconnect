@@ -16,7 +16,7 @@ export function getServerUrl(): string {
                       (window.location.hostname === 'localhost' && window.location.port !== '5000' && window.location.port !== '3000');
   if (isCapacitor) {
     // Primary: Active public HTTPS tunnel (works on 4G/5G and any Wi-Fi)
-    return 'https://young-words-drum.loca.lt';
+    return 'https://consumer-std-hammer-praise.trycloudflare.com';
   }
   return '';
 }
