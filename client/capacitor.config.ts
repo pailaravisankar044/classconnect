@@ -5,8 +5,8 @@ const config: CapacitorConfig = {
   appName: 'ClassConnect',
   webDir: 'dist',
   server: {
-    url: 'http://192.168.29.216:5000',
-    cleartext: true
+    cleartext: true,
+    androidScheme: 'https'
   },
   android: {
     allowMixedContent: true

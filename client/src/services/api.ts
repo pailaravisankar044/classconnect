@@ -5,7 +5,25 @@ export interface ApiResponse<T = any> {
   [key: string]: any;
 }
 
-const API_BASE = '/api';
+export function getServerUrl(): string {
+  if (typeof window === 'undefined') return '';
+  const custom = localStorage.getItem('classconnect_server_url');
+  if (custom && custom.trim()) {
+    return custom.trim().replace(/\/$/, '');
+  }
+  // Check if running inside native Capacitor Android app
+  const isCapacitor = window.location.origin.includes('capacitor://') ||
+                      (window.location.hostname === 'localhost' && window.location.port !== '5000' && window.location.port !== '3000');
+  if (isCapacitor) {
+    return 'http://192.168.29.216:5000';
+  }
+  return '';
+}
+
+export function getApiBaseUrl(): string {
+  const server = getServerUrl();
+  return server ? `${server}/api` : '/api';
+}
 
 class ApiService {
   private getToken(): string | null {
@@ -27,7 +45,8 @@ class ApiService {
     }
 
     try {
-      const response = await fetch(`${API_BASE}${endpoint}`, {
+      const apiBase = getApiBaseUrl();
+      const response = await fetch(`${apiBase}${endpoint}`, {
         ...options,
         headers
       });

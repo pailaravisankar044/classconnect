@@ -14,8 +14,10 @@ import {
   BarChart2, 
   Bell, 
   Settings,
-  Users
+  Users,
+  Server
 } from 'lucide-react';
+import { ServerConnectionModal } from './ServerConnectionModal.js';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -23,6 +25,7 @@ export const Navbar: React.FC = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [showServerModal, setShowServerModal] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -58,6 +61,13 @@ export const Navbar: React.FC = () => {
               <HelpCircle className="w-4 h-4 text-slate-400" />
               Help & Support
             </Link>
+            <button
+              onClick={() => setShowServerModal(true)}
+              title="Server Connection Settings"
+              className="text-slate-500 hover:text-slate-800 p-2 rounded-lg hover:bg-slate-100 transition-colors"
+            >
+              <Server className="w-4 h-4" />
+            </button>
             <Link 
               to="/login" 
               className="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm transition-all hover:shadow-brand-500/20"
@@ -66,6 +76,7 @@ export const Navbar: React.FC = () => {
             </Link>
           </div>
         </div>
+        <ServerConnectionModal isOpen={showServerModal} onClose={() => setShowServerModal(false)} />
       </header>
     );
   }
@@ -267,6 +278,7 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
       )}
+      <ServerConnectionModal isOpen={showServerModal} onClose={() => setShowServerModal(false)} />
     </header>
   );
 };
