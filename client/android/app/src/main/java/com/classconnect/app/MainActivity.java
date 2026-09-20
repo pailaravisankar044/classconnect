@@ -55,6 +55,7 @@ public class MainActivity extends BridgeActivity {
             settings.setAllowFileAccess(true);
             settings.setAllowContentAccess(true);
             settings.setJavaScriptCanOpenWindowsAutomatically(true);
+            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
             // Grant WebRTC camera & microphone permission request in WebView on Android 12, 13, 14, 15
             webView.setWebChromeClient(new WebChromeClient() {
