@@ -15,7 +15,8 @@ export function getServerUrl(): string {
   const isCapacitor = window.location.origin.includes('capacitor://') ||
                       (window.location.hostname === 'localhost' && window.location.port !== '5000' && window.location.port !== '3000');
   if (isCapacitor) {
-    return 'http://192.168.29.216:5000';
+    // Primary: Active public HTTPS tunnel (works on 4G/5G and any Wi-Fi)
+    return 'https://young-words-drum.loca.lt';
   }
   return '';
 }
@@ -33,6 +34,7 @@ class ApiService {
   private async request<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const token = this.getToken();
     const headers: Record<string, string> = {
+      'Bypass-Tunnel-Reminder': '1',
       ...(options.headers as Record<string, string> || {}),
     };
 

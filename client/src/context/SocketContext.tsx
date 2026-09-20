@@ -22,7 +22,10 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: 5,
-      reconnectionDelay: 1000
+      reconnectionDelay: 1000,
+      extraHeaders: {
+        'Bypass-Tunnel-Reminder': '1'
+      }
     });
 
     newSocket.on('connect', () => {

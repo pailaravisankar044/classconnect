@@ -27,7 +27,10 @@ export const ServerConnectionModal: React.FC<{
     setStatusMsg('Testing connection to server...');
     try {
       const cleanUrl = targetUrl.trim().replace(/\/$/, '');
-      const res = await fetch(`${cleanUrl}/api/health`, { method: 'GET' });
+      const res = await fetch(`${cleanUrl}/api/health`, {
+        method: 'GET',
+        headers: { 'Bypass-Tunnel-Reminder': '1' }
+      });
       const data = await res.json();
       if (res.ok && data.status === 'ok') {
         setTestResult('success');
@@ -37,7 +40,7 @@ export const ServerConnectionModal: React.FC<{
       }
     } catch (err: any) {
       setTestResult('error');
-      setStatusMsg('Could not reach server. Verify the IP/domain, port, and Wi-Fi connection.');
+      setStatusMsg('Could not reach server. Verify the URL and your internet connection.');
     } finally {
       setIsTesting(false);
     }
@@ -91,25 +94,38 @@ export const ServerConnectionModal: React.FC<{
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setUrl('https://young-words-drum.loca.lt');
+                  testConnection('https://young-words-drum.loca.lt');
+                }}
+                className="flex-1 py-2 px-3 rounded-xl bg-brand-50 border border-brand-200 hover:bg-brand-100 text-brand-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+              >
+                🌐 Cloud Tunnel (Recommended)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setUrl('http://192.168.29.216:5000');
+                  testConnection('http://192.168.29.216:5000');
+                }}
+                className="py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-medium transition-all"
+              >
+                📶 Local Wi-Fi
+              </button>
+            </div>
+
             <button
               type="button"
               onClick={() => testConnection(url)}
               disabled={isTesting || !url.trim()}
-              className="flex-1 py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+              className="w-full py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin' : ''}`} />
-              Test Connection
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setUrl('http://192.168.29.216:5000');
-                testConnection('http://192.168.29.216:5000');
-              }}
-              className="py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-medium transition-all"
-            >
-              Reset to Wi-Fi IP
+              Test Entered URL
             </button>
           </div>
 
