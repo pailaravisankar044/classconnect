@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Rounded Background Container -->
+  <rect width="100" height="100" rx="24" fill="url(#grad)" />
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Graduation Cap Rhombus (Top) -->
+  <path d="M50 24L78 37L50 50L22 37L50 24Z" fill="#ffffff" />
+  
+  <!-- Graduation Cap Base -->
+  <path d="M33 43.5V55C33 60 40.5 64 50 64C59.5 64 67 60 67 55V43.5L50 52L33 43.5Z" fill="#e0e7ff" />
+  
+  <!-- Tassel -->
+  <path d="M72 38V54C72 56 70.5 58 68.5 58" stroke="#fcd34d" stroke-width="3" stroke-linecap="round" />
+  <circle cx="68" cy="59" r="2.5" fill="#fcd34d" />
+  
+  <!-- Play Symbol (Video Connection concept) embedded in center base -->
+  <polygon points="46,70 58,77 46,84" fill="#ffffff" />
+</svg>

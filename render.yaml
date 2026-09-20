@@ -1,0 +1,18 @@
+# ========================================================
+# ClassConnect - Render.com Blueprint (Infrastructure as Code)
+# ========================================================
+services:
+  - type: web
+    name: classconnect
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DEFAULT_ATTENDANCE_THRESHOLD
+        value: "75"
+    autoDeploy: true

@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+client/android/app/build
+client/android/.gradle
+client/dist
+server/dist
+.gemini
+uploads/materials/*
+!uploads/materials/.gitkeep
